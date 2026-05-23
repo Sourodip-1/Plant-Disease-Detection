@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Caches
+.cache
+.cache.sqlite
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Large Datasets / Archives
+PlantVillage-Dataset-master/
+PlantVillage-Dataset-master.zip
+data/
+
+# Model checkpoints / serialized models
+models/
+*.pth
+*.pkl
+
+# Outputs & Generated Reports
+diagnosis_report.png
+output/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE / Editor configurations
+.vscode/
+.idea/
+*.swp
