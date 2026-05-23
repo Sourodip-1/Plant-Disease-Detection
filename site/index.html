@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Disease Detection Dashboard</title>
+    <meta name="description"
+        content="A premium testing interface for the Plant Disease Detection API utilizing Computer Vision and weather data.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="glass-bg"></div>
+    <div class="app-container">
+        <header>
+            <h1>🌿 Plant Disease Diagnosis</h1>
+            <p class="subtitle">AI Symptom Detection & Environmental Analysis</p>
+        </header>
+
+        <main>
+            <!-- Configuration / Input Section -->
+            <section class="card upload-section" aria-labelledby="form-heading">
+                <h2 id="form-heading" class="sr-only">Diagnosis Form</h2>
+                <form id="diagnosis-form">
+                    <div class="api-config">
+                        <label for="api-url-input">API Base URL</label>
+                        <input type="url" id="api-url-input" value="http://127.0.0.1:8000"
+                            placeholder="e.g. http://127.0.0.1:8000" required>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="plant-type-select">Plant Type</label>
+                            <select id="plant-type-select" required>
+                                <option value="" disabled selected>Select plant type...</option>
+                                <option value="apple">Apple</option>
+                                <option value="chili">Chili</option>
+                                <option value="citrus">Citrus</option>
+                                <option value="cucumber">Cucumber</option>
+                                <option value="grape">Grape</option>
+                                <option value="melon">Melon</option>
+                                <option value="potato">Potato</option>
+                                <option value="tomato">Tomato</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="location-input">Location</label>
+                            <input type="text" id="location-input" value="Asansol, India"
+                                placeholder="e.g. Asansol, India" required>
+                        </div>
+                    </div>
+
+                    <div class="dropzone" id="file-dropzone">
+                        <input type="file" id="file-input" accept="image/*" required class="sr-only">
+                        <div class="dropzone-content">
+                            <div class="upload-icon">📸</div>
+                            <p class="dropzone-text">Drag & drop a leaf image here, or <span>browse</span></p>
+                            <p class="dropzone-subtext">Supports PNG, JPG, JPEG</p>
+                        </div>
+                        <img id="image-preview" class="preview-img hidden" alt="Uploaded plant leaf preview">
+                    </div>
+
+                    <button type="submit" id="submit-btn" class="btn btn-primary">
+                        <span>Run Diagnosis</span>
+                        <div class="spinner hidden" id="btn-spinner"></div>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Results Section -->
+            <section class="card results-section hidden" id="results-section" aria-labelledby="results-heading">
+                <div class="results-header">
+                    <h2 id="results-heading">Diagnosis Report</h2>
+                    <span class="badge" id="report-timestamp">Live</span>
+                </div>
+
+                <div class="results-grid">
+                    <!-- Left Column: Visuals & Diagnosis -->
+                    <div class="results-main">
+                        <div class="diagnosis-card" id="diagnosis-card">
+                            <span class="diag-label">FINAL DIAGNOSIS</span>
+                            <h3 id="diag-name">Late Blight</h3>
+                            <p id="diag-plant-info">Potato — diagnosed at 23.68°N, 86.98°E</p>
+                        </div>
+
+                        <div class="symptoms-card">
+                            <h4>🔬 Symptom Probabilities (Vision Model)</h4>
+                            <div class="symptom-list" id="vision-symptoms-list">
+                                <!-- Generated Dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="symptoms-card">
+                            <h4>🧪 Mapped Physical Symptoms (Tabular model)</h4>
+                            <div class="binary-symptoms" id="physical-symptoms-list">
+                                <!-- Generated Dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Environmental Stats -->
+                    <div class="results-sidebar">
+                        <div class="weather-card">
+                            <h4>🌤 Live Weather Data</h4>
+                            <div class="weather-grid">
+                                <div class="weather-item">
+                                    <span class="weather-icon">🌡️</span>
+                                    <div class="weather-details">
+                                        <span class="weather-label">Temperature</span>
+                                        <span class="weather-value" id="wx-temp">24.5 °C</span>
+                                        <span class="weather-cat" id="wx-temp-cat">Medium</span>
+                                    </div>
+                                </div>
+                                <div class="weather-item">
+                                    <span class="weather-icon">💧</span>
+                                    <div class="weather-details">
+                                        <span class="weather-label">Humidity</span>
+                                        <span class="weather-value" id="wx-humidity">65.0 %</span>
+                                        <span class="weather-cat" id="wx-humidity-cat">Medium</span>
+                                    </div>
+                                </div>
+                                <div class="weather-item">
+                                    <span class="weather-icon">🌱</span>
+                                    <div class="weather-details">
+                                        <span class="weather-label">Soil Moisture</span>
+                                        <span class="weather-value" id="wx-soil">0.340 m³/m³</span>
+                                        <span class="weather-cat" id="wx-soil-cat">Moderate</span>
+                                    </div>
+                                </div>
+                                <div class="weather-item">
+                                    <span class="weather-icon">🌧️</span>
+                                    <div class="weather-details">
+                                        <span class="weather-label">Rain</span>
+                                        <span class="weather-value" id="wx-rain">0.00 mm</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <h4>💡 Diagnosis Explanation</h4>
+                            <p id="diag-explanation">The ResNet18 model identifies visual leaf characteristics and feeds
+                                them as binary indicators to a Decision Tree, along with real-time microclimate
+                                conditions from the Open-Meteo API.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Plant Disease Diagnosis System &copy; 2026</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
