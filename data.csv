@@ -58,7 +58,7 @@ potato,0,0,1,0,0,1,1,low,medium,wet,bacterial_wilt
 grape,0,0,0,0,0,0,0,medium,medium,moderate,healthy
 potato,1,0,0,0,0,0,0,high,high,dry,healthy
 chili,1,0,0,0,0,0,0,medium,medium,wet,leaf_spot
-citrus,1,0,0,0,0,0,0,high,low,moderate,healthy
+citrus,1,0,0,0,0,0,0,high,low,moderate,citrus_canker
 tomato,0,0,0,0,0,0,0,low,high,moderate,healthy
 chili,0,0,0,0,0,0,0,low,low,moderate,healthy
 tomato,0,1,1,0,0,1,0,low,high,wet,bacterial_wilt
@@ -145,7 +145,7 @@ melon,0,0,0,1,0,0,0,medium,medium,dry,powdery_mildew
 melon,0,1,0,0,0,0,0,low,medium,dry,healthy
 melon,0,0,0,0,1,0,0,low,medium,moderate,healthy
 cucumber,0,0,0,0,0,0,0,medium,medium,moderate,powdery_mildew
-citrus,1,0,0,0,0,0,0,low,low,moderate,healthy
+citrus,1,0,0,0,0,0,0,low,low,moderate,citrus_canker
 chili,1,0,0,0,0,0,0,medium,high,moderate,healthy
 chili,1,0,0,0,1,0,0,high,medium,wet,leaf_spot
 citrus,0,0,0,0,1,0,0,low,medium,moderate,healthy
@@ -173,11 +173,11 @@ potato,1,1,1,0,0,0,0,high,high,moderate,early_blight
 tomato,0,0,0,0,0,0,0,medium,medium,moderate,healthy
 melon,1,0,0,0,0,0,0,medium,medium,dry,healthy
 chili,0,1,1,0,0,1,0,low,medium,wet,bacterial_wilt
-citrus,1,0,0,0,0,0,0,low,high,moderate,healthy
+citrus,1,0,0,0,0,0,0,low,high,moderate,citrus_canker
 cucumber,0,0,0,0,1,0,0,low,low,dry,healthy
 tomato,0,1,0,0,0,0,0,low,medium,moderate,healthy
 potato,0,1,0,0,0,0,0,high,high,wet,early_blight
-citrus,1,0,0,0,0,0,0,low,medium,moderate,healthy
+citrus,1,0,0,0,0,0,0,low,medium,moderate,citrus_canker
 grape,1,0,0,0,0,0,0,medium,medium,dry,healthy
 tomato,0,0,1,0,0,1,0,high,high,moderate,fusarium_wilt
 melon,0,0,0,0,0,0,0,medium,medium,moderate,healthy
@@ -452,11 +452,11 @@ citrus,0,0,0,0,1,0,0,medium,high,moderate,healthy
 cucumber,0,0,0,1,1,0,0,medium,medium,moderate,powdery_mildew
 tomato,1,0,0,0,0,0,0,medium,low,dry,healthy
 cucumber,0,0,0,0,0,0,0,low,low,dry,healthy
-citrus,1,0,0,0,0,0,0,medium,low,moderate,healthy
+citrus,1,0,0,0,0,0,0,medium,low,moderate,citrus_canker
 tomato,1,0,0,0,0,0,0,medium,medium,dry,healthy
 cucumber,0,1,0,0,0,0,0,low,medium,moderate,healthy
 chili,1,0,0,0,0,0,0,high,medium,dry,healthy
-citrus,1,0,0,0,0,0,0,high,high,dry,healthy
+citrus,1,0,0,0,0,0,0,high,high,dry,citrus_canker
 tomato,0,1,0,0,0,0,0,medium,medium,moderate,early_blight
 grape,0,0,0,0,1,0,0,high,low,dry,healthy
 cucumber,0,0,0,0,1,0,0,low,medium,moderate,healthy
