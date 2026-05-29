@@ -116,5 +116,5 @@ async def predict(
 
 
 # Serve static files from the Site folder
-app.mount("/", StaticFiles(directory="Site", html=True), name="site")
+app.mount("/", StaticFiles(directory="site", html=True), name="site")
 
