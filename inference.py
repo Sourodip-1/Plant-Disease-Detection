@@ -95,54 +95,67 @@ def fetch_weather(lat: float, lon: float) -> dict:
       temperature_2m, relative_humidity_2m, rain, soil_moisture_0_to_1cm,
       precipitation, cloud_cover, soil_temperature_0cm
     """
-    cache_session  = requests_cache.CachedSession(".cache", expire_after=3600)
-    retry_session  = retry(cache_session, retries=5, backoff_factor=0.2)
-    openmeteo_c    = openmeteo_requests.Client(session=retry_session)
+    try:
+        cache_session  = requests_cache.CachedSession(".cache", expire_after=3600)
+        retry_session  = retry(cache_session, retries=5, backoff_factor=0.2)
+        openmeteo_c    = openmeteo_requests.Client(session=retry_session)
 
-    url    = "https://api.open-meteo.com/v1/forecast"
-    params = {
-        "latitude" : lat,
-        "longitude": lon,
-        "hourly"   : [
-            "temperature_2m",
-            "relative_humidity_2m",
-            "rain",
-            "soil_moisture_0_to_1cm",
-            "precipitation",
-            "cloud_cover",
-            "soil_temperature_0cm",
-        ],
-    }
+        url    = "https://api.open-meteo.com/v1/forecast"
+        params = {
+            "latitude" : lat,
+            "longitude": lon,
+            "hourly"   : [
+                "temperature_2m",
+                "relative_humidity_2m",
+                "rain",
+                "soil_moisture_0_to_1cm",
+                "precipitation",
+                "cloud_cover",
+                "soil_temperature_0cm",
+            ],
+        }
 
-    responses = openmeteo_c.weather_api(url, params=params)
-    response  = responses[0]
+        responses = openmeteo_c.weather_api(url, params=params)
+        response  = responses[0]
 
-    hourly = response.Hourly()
-    variables = [hourly.Variables(i).ValuesAsNumpy() for i in range(7)]
+        hourly = response.Hourly()
+        variables = [hourly.Variables(i).ValuesAsNumpy() for i in range(7)]
 
-    hourly_df = pd.DataFrame({
-        "date"                   : pd.date_range(
-            start     = pd.to_datetime(hourly.Time(),    unit="s", utc=True),
-            end       = pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
-            freq      = pd.Timedelta(seconds=hourly.Interval()),
-            inclusive = "left",
-        ),
-        "temperature_2m"          : variables[0],
-        "relative_humidity_2m"    : variables[1],
-        "rain"                    : variables[2],
-        "soil_moisture_0_to_1cm"  : variables[3],
-        "precipitation"           : variables[4],
-        "cloud_cover"             : variables[5],
-        "soil_temperature_0cm"    : variables[6],
-    })
+        hourly_df = pd.DataFrame({
+            "date"                   : pd.date_range(
+                start     = pd.to_datetime(hourly.Time(),    unit="s", utc=True),
+                end       = pd.to_datetime(hourly.TimeEnd(), unit="s", utc=True),
+                freq      = pd.Timedelta(seconds=hourly.Interval()),
+                inclusive = "left",
+            ),
+            "temperature_2m"          : variables[0],
+            "relative_humidity_2m"    : variables[1],
+            "rain"                    : variables[2],
+            "soil_moisture_0_to_1cm"  : variables[3],
+            "precipitation"           : variables[4],
+            "cloud_cover"             : variables[5],
+            "soil_temperature_0cm"    : variables[6],
+        })
 
-    print(f"\n[Weather] Coordinates: {response.Latitude():.4f}°N  "
-          f"{response.Longitude():.4f}°E   "
-          f"Elevation: {response.Elevation():.0f} m\n")
+        print(f"\n[Weather] Coordinates: {response.Latitude():.4f}°N  "
+              f"{response.Longitude():.4f}°E   "
+              f"Elevation: {response.Elevation():.0f} m\n")
 
-    # Use the most recent hour's data
-    current = hourly_df.iloc[-1].to_dict()
-    return current, hourly_df
+        # Use the most recent hour's data
+        current = hourly_df.iloc[-1].to_dict()
+        return current, hourly_df
+    except Exception as e:
+        print(f"[ERROR] Weather API failed: {e}. Using fallback weather data.")
+        fallback = {
+            "temperature_2m": 25.0,
+            "relative_humidity_2m": 60.0,
+            "rain": 0.0,
+            "soil_moisture_0_to_1cm": 0.3,
+            "precipitation": 0.0,
+            "cloud_cover": 50.0,
+            "soil_temperature_0cm": 25.0,
+        }
+        return fallback, pd.DataFrame([fallback])
 
 
 def _weather_to_categorical(temp_c: float, humidity_pct: float,
@@ -179,11 +192,15 @@ def _weather_to_categorical(temp_c: float, humidity_pct: float,
 # 5. GEOLOCATION
 # ═══════════════════════════════════════════════════════════════════════════════
 def get_coords(location_name: str) -> tuple[float, float]:
-    geolocator = Nominatim(user_agent="plant_disease_inference")
-    loc = geolocator.geocode(location_name, timeout=10)
-    if loc:
-        return loc.latitude, loc.longitude
-    print(f"[WARN] Location '{location_name}' not found. Using default (0°, 0°).")
+    try:
+        geolocator = Nominatim(user_agent="plant_disease_inference")
+        loc = geolocator.geocode(location_name, timeout=10)
+        if loc:
+            return loc.latitude, loc.longitude
+    except Exception as e:
+        print(f"[ERROR] Geolocation failed for '{location_name}': {e}")
+        
+    print(f"[WARN] Location '{location_name}' not found or API error. Using default (0°, 0°).")
     return 0.0, 0.0
 
 
@@ -234,6 +251,41 @@ def predict_symptoms(image_path: str, model: nn.Module,
     if vision_binary_dict.get('Mold'):
         tab_binary[6] = 1
 
+    return vision_probs_dict, tab_binary, vision_binary_dict
+
+
+def text_to_symptoms(features: str) -> tuple[dict, np.ndarray, dict]:
+    """
+    Parses a text query to extract tabular symptoms, bypassing the CNN model.
+    TABULAR_SYMPTOMS = ["spots", "yellowing", "wilting", "powder", "leaf_curl", "stem_damage", "mold_growth"]
+    """
+    features_lower = features.lower()
+    tab_binary = np.zeros(len(TABULAR_SYMPTOMS), dtype=int)
+    
+    if any(k in features_lower for k in ["spot", "dot", "lesion"]):
+        tab_binary[0] = 1
+    if any(k in features_lower for k in ["yellow", "pale", "chlorosis", "brown"]):
+        tab_binary[1] = 1
+    if any(k in features_lower for k in ["wilt", "droop", "limp"]):
+        tab_binary[2] = 1
+    if any(k in features_lower for k in ["powder", "white", "dust", "ash"]):
+        tab_binary[3] = 1
+    if any(k in features_lower for k in ["curl", "roll", "twist"]):
+        tab_binary[4] = 1
+    if any(k in features_lower for k in ["stem", "stalk", "rot"]):
+        tab_binary[5] = 1
+    if any(k in features_lower for k in ["mold", "mould", "fungus", "fuzz"]):
+        tab_binary[6] = 1
+
+    # Dummy vision model outputs
+    vision_probs_dict = {cls: 0.0 for cls in VISION_CLASSES}
+    vision_binary_dict = {cls: 0 for cls in VISION_CLASSES}
+    
+    # If no symptoms were found and the user mentions healthy
+    if "healthy" in features_lower or "normal" in features_lower and np.sum(tab_binary) == 0:
+        vision_probs_dict["Healthy"] = 1.0
+        vision_binary_dict["Healthy"] = 1
+        
     return vision_probs_dict, tab_binary, vision_binary_dict
 
 

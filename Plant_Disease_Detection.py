@@ -261,7 +261,7 @@ def load_and_train_tabular_model():
         print(f"Warning: {csv_path} not found. Cannot initialize tabular model.")
         return
 
-    tabular_data = pd.read_csv(csv_path)
+    tabular_data = pd.read_csv(csv_path, keep_default_na=False)
     le_dict = {}
     for col in tabular_data.columns:
         if tabular_data[col].dtype == 'object':

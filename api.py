@@ -14,6 +14,7 @@ from inference import (
     fetch_weather,
     _weather_to_categorical,
     predict_symptoms,
+    text_to_symptoms,
     predict_disease,
     TABULAR_SYMPTOMS
 )
@@ -43,7 +44,8 @@ print("Models loaded successfully.")
 async def predict(
     file: UploadFile = File(...),
     plant_type: str = Form(...),
-    location: str = Form(...)
+    location: str = Form(...),
+    features: str = Form(None)
 ):
     try:
         # 1. Save uploaded file to a temporary location
@@ -64,8 +66,11 @@ async def predict(
             weather["soil_moisture_0_to_1cm"],
         )
 
-        # 3. Vision Inference
-        symptom_probs, symptom_binary, vision_binary_dict = predict_symptoms(temp_path, vision_model)
+        # 3. Vision Inference OR Feature Extraction
+        if features and features.strip() != "":
+            symptom_probs, symptom_binary, vision_binary_dict = text_to_symptoms(features)
+        else:
+            symptom_probs, symptom_binary, vision_binary_dict = predict_symptoms(temp_path, vision_model)
 
         # 4. Disease Prediction
         disease = predict_disease(

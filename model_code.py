@@ -7,7 +7,7 @@ import xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
-data=pd.read_csv("data.csv")
+data=pd.read_csv("data.csv", keep_default_na=False)
 data["disease"].value_counts().plot(kind="bar", figsize=(10,5))
 
 plt.title("Disease Distribution")
